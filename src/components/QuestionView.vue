@@ -56,14 +56,15 @@
           </template>
         </el-table-column>
         <el-table-column
+          label="问题分类">
+          <template slot-scope="scope">
+            <span>{{ scope.row.questionType }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="提问人">
           <template slot-scope="scope">
-            <el-popover trigger="hover" placement="right">
-              <p>姓名: {{ scope.row.submitPerson }}</p>
-              <!-- <div slot="reference" class="name-wrapper">
-                <el-button type="text">{{ scope.row.userName }}</el-button>
-              </div> -->
-            </el-popover>
+            <span>{{ scope.row.submitPersonName }}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -210,7 +211,7 @@
                 search: '',
                 dialogVisible: false,
                 dialogUpdate: false,
-                pageSize: 5,
+                pageSize: 10,
                 currentPage: 1,
                 total: 0,
                 disablePage: false
@@ -310,14 +311,31 @@
                     "submitPersonId": localStorage.getItem("userId")
                 });
                 this.axios({
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     method: 'post',
                     url:'/question/addQuestion',
                     data:postData
                 }).then(response =>
-                {
-                    this.axios.post('/question/getQuestionList').then(response =>
+                {   
+                    let postData = JSON.stringify({
+                        "questionName": this.search,
+                        "pageNo": this.currentPage,
+                        "pageSize": this.pageSize,
+                    });
+                    this.axios({
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      method: 'post',
+                      url:'/question/getQuestionList',
+                      data:postData
+                    })
+                    .then(response =>
                     {
-                        this.tableData = response.data;
+                        this.tableData = response.data.data.data;
+                        this.total = response.data.data.total;
                         this.currentPage = 1;
                         this.$message({
                             type: 'success',
@@ -401,22 +419,19 @@
                 this.total = response.data.tableData.length;
                 // console.log(JSON.parse(JSON.stringify(response.data))['tableData'])
             });*/
-            this.axios.post('/page').then(response =>
+            this.axios.post('/question/getQuestionList').then(response =>
             {
-                this.tableData = response.data;
+                this.tableData = response.data.data.data;
+                this.total = response.data.data.total;
+                this.currentPage = 1;
+                this.$message({
+                    type: 'success',
+                    message: '已添加!'
+                });
             }).catch(error =>
             {
                 console.log(error);
             });
-
-            this.axios.post('/rows').then(response =>
-            {
-                this.total = response.data;
-            }).catch(error =>
-            {
-                console.log(error);
-            });
-
         },
 }
 </script>
