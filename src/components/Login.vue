@@ -1,12 +1,17 @@
 <template>
-    <div class="login-container" :style ="leftBg">
+    <div class="login-container" style>
+        <!-- <el-image
+            style="width: 100px; height: 100px"
+            :src="imgSrc"
+            :fit="fit">
+        </el-image> -->
         <el-form :model="loginForm" :rules="rules"
         status-icon
         ref="loginForm" 
         label-position="left" 
         label-width="0px" 
         class="demo-ruleForm login-page">
-        <h3 class="title">系统登录</h3>
+        <h2 class="title" style="text-align:center;">在线答疑系统登录</h2>
         <el-form-item prop="username">
             <el-input type="text" 
                 v-model="loginForm.username"
@@ -47,10 +52,11 @@ import Bg from "./bg.vue"
 export default {
     data(){
         return {
-            leftBg: {
-              background: "#235d8b url(" + require("../assets/images/bg2.jpeg") + ") center center no-repeat",
-            },
-            // imgSrc: require('../assets/images/bgp.png'),
+            // leftBg: {
+            //   background: "#235d8b url(" + require("../assets/images/bg2.jpeg") + ") center center no-repeat",
+            // },
+            imgSrc: require('../assets/images/bg2.jpeg'),
+            fit: 'fill',
             logining: false,                      //设置登录按钮状态
             loginForm: {
                 username: '',
@@ -91,7 +97,8 @@ export default {
                         this.$router.push("/question_view");
                         console.log(response);
                         localStorage.setItem("userId", response.data.data.id);
-                        localStorage.setItem("userName", response.data.data.userName);
+                        localStorage.setItem("userName", response.data.data.nickName);
+                        localStorage.setItem("coinCount", response.data.data.coinCount);
                         console.log(localStorage.getItem("userName"));
                         console.log(localStorage.getItem("userId"));
                     }).catch(error => {
@@ -110,8 +117,13 @@ export default {
 
 <style scoped>
 .login-container {
+    padding: 0;
+    margin: 0;
     width: 100%;
+    left: -0.1%;
     height: 100%;
+    position: fixed;
+    background-image: url("../assets/images/bg2.jpeg");
 }
 .login-page {
     -webkit-border-radius: 5px;
@@ -126,16 +138,5 @@ export default {
 label.el-checkbox.rememberme {
     margin: 0px 0px 15px;
     text-align: left;
-}
-.background{
-    width:100%;  
-    height:100%;  /**宽高100%是为了图片铺满屏幕 */
-    z-index:-1;
-    position: absolute;
-}
- 
-.front{
-    z-index:1;
-    position: absolute;
 }
 </style>

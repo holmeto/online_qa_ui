@@ -1,6 +1,22 @@
 <template>
   <div>
-      <el-form :inline="true" class="demo-form-inline">
+      <el-row class="demo-avatar demo-basic" style = "float: right;">
+        <el-col :span="30">
+          <div class="sub-title">{{ "欢迎，" + userName }}</div>
+          <div class="sub-title">{{ "积分:" + coinCount }}</div>
+          <div class="demo-basic--circle">
+            <div>
+              <!-- <span>{{ userName }}</span> -->
+              <!-- <span>{{ coinCount }}</span> -->
+            </div>
+            <div class="block">
+              <el-avatar :size="50" :src="circleUrl">
+              </el-avatar>
+            </div>
+          </div>
+        </el-col>  
+      </el-row>
+      <el-form :inline="true" class="demo-form-inline" style="position: relative; top: 30px;">
           <el-form-item>
             <el-input
               v-model="search"
@@ -35,7 +51,11 @@
         :data="tableData"
         highlight-current-row
         border
-        style="width: 100%">
+        style="width: 100%;"
+        :row-class-name="tableRowClassName"
+        :header-cell-style="{textAlign: 'center'}"
+        :cell-style="{ textAlign: 'center' }"
+        >
         <el-table-column
           label="编号">
           <template slot-scope="scope">
@@ -76,8 +96,14 @@
         <el-table-column
           label="操作"
           fixed="right"
-          width="200">
+          width="300">
           <template slot-scope="scope">
+            <el-button
+              type="success"
+              size="mini"
+              icon="el-icon-search"
+              @click="getQuestionDetail(scope.$index, scope.row)">查看详情
+            </el-button>
             <el-button
               size="mini"
               icon="el-icon-edit"
@@ -107,8 +133,8 @@
           <el-form-item label="标题" prop="questionName" style="width: 50%">
             <el-input v-model="ruleForm.questionName"></el-input>
           </el-form-item>
-          <el-form-item label="问题描述" prop="questionDescription">
-            <el-input type="textarea" rows="10" v-model="ruleForm.questionDescription"></el-input>
+          <el-form-item label="问题描述" prop="questionContent">
+            <el-input type="textarea" rows="10" v-model="ruleForm.questionContent"></el-input>
           </el-form-item>
           <el-form-item label="问题分类" prop="questionType" style="width: 50%">
             <el-select v-model="ruleForm.questionType" placeholder="请选择">
@@ -173,6 +199,9 @@
     export default {
         data() {
             return {
+                userName: '',
+                coinCount: 0,
+                circleUrl: require("../assets/images/avatar.png"),
                 options: [{
                   value: '大学物理',
                   label: '大学物理'
@@ -191,7 +220,7 @@
                 }],
                 ruleForm: {
                     questionName: '',
-                    questionDescription: '',
+                    questionContent: '',
                     questionType: '',
                 },
                 rules: {
@@ -199,7 +228,7 @@
                         { required: true, message: '请输入标题', trigger: 'blur' },
                         { min: 2, max: 20, message: '长度在 2 到 7 个字符', trigger: 'blur' }
                     ],
-                    questionDescription: [
+                    questionContent: [
                         { required: true, message: '请输入问题描述', trigger: 'blur' },
                         { min: 5, max: 200, message: '在 5 到 200 个字符之间', trigger: 'blur' }
                     ],
@@ -218,8 +247,24 @@
             }
         },
         methods: {
+            tableRowClassName({row, rowIndex}) {
+              if (rowIndex === 1) {
+                return 'warning-row';
+              } else if (rowIndex === 3) {
+                return 'success-row';
+              }
+              return '';
+            },
+            getQuestionDetail(index, row) {
+              this.$router.push({
+                path: "/question_detail",
+                query: {
+                  questionId: row.id
+                }
+              });
+            },
             handleEdit(index, row) {
-                this.dialogUpdate = true;
+                this.dialogVisible = true;
                 this.ruleForm = Object.assign({}, row); //这句是关键！！！
             },
             handleDelete(index, row) {
@@ -273,20 +318,7 @@
             },
             handleCurrentChange() {
                 console.log(`当前页: ${this.currentPage}`);
-                let postData = this.qs.stringify({
-                    page: this.currentPage
-                });
-                this.axios({
-                    method: 'post',
-                    url:'/page',
-                    data:postData
-                }).then(response =>
-                {
-                    this.tableData = response.data;
-                }).catch(error =>
-                {
-                    console.log(error);
-                });
+                this.getTableList();
             },
             cancel() {
                 this.dialogUpdate = false;
@@ -300,13 +332,40 @@
                     userAddress: ''
                 }
             },
+            getTableList() {
+              let postData = JSON.stringify({
+                  "questionName": this.search,
+                  "pageNo": this.currentPage,
+                  "pageSize": this.pageSize,
+              });
+              this.axios({
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'post',
+                url:'/question/getQuestionList',
+                data:postData
+              })
+              .then(response =>
+              {
+                  this.tableData = response.data.data.data;
+                  this.total = response.data.data.total;
+                  this.$message({
+                      type: 'success',
+                      message: '查询成功!'
+                  });
+              }).catch(error =>
+              {
+                  console.log(error);
+              });
+            },
             addQuestion() {
                 console.log("开始提问");
                 console.log(localStorage.getItem("userName"));
                 console.log(localStorage.getItem("userId"));
                 let postData = JSON.stringify({
                     "questionName": this.ruleForm.questionName,
-                    "questionContent": this.ruleForm.questionDescription,
+                    "questionContent": this.ruleForm.questionContent,
                     "questionType": this.ruleForm.questionType,
                     "submitPersonId": localStorage.getItem("userId")
                 });
@@ -319,32 +378,7 @@
                     data:postData
                 }).then(response =>
                 {   
-                    let postData = JSON.stringify({
-                        "questionName": this.search,
-                        "pageNo": this.currentPage,
-                        "pageSize": this.pageSize,
-                    });
-                    this.axios({
-                      headers: {
-                          'Content-Type': 'application/json'
-                      },
-                      method: 'post',
-                      url:'/question/getQuestionList',
-                      data:postData
-                    })
-                    .then(response =>
-                    {
-                        this.tableData = response.data.data.data;
-                        this.total = response.data.data.total;
-                        this.currentPage = 1;
-                        this.$message({
-                            type: 'success',
-                            message: '已添加!'
-                        });
-                    }).catch(error =>
-                    {
-                        console.log(error);
-                    });
+                    this.getTableList();
                     this.getPages();
                     this.dialogVisible = false
                     console.log(response);
@@ -383,21 +417,7 @@
                 });
             },
             onSearch() {
-                let postData = this.qs.stringify({
-                    userName: this.search
-                });
-                this.axios({
-                    method: 'post',
-                    url: '/ListByName',
-                    data: postData
-                }).then(response =>
-                {
-                    this.tableData = response.data;
-                    this.disablePage = true;
-                }).catch(error =>
-                {
-                    console.log(error);
-                });
+                this.getTableList();
             },
             getPages() {
                 // this.axios.post('/rows').then(response =>
@@ -413,29 +433,25 @@
             }
         },
         created() {
+            this.userName = localStorage.getItem("userName");
+            this.coinCount = localStorage.getItem("coinCount");
             /*this.axios.get('static/user.json').then(response =>
             {
                 this.tableData = response.data.tableData;
                 this.total = response.data.tableData.length;
                 // console.log(JSON.parse(JSON.stringify(response.data))['tableData'])
             });*/
-            this.axios.post('/question/getQuestionList').then(response =>
-            {
-                this.tableData = response.data.data.data;
-                this.total = response.data.data.total;
-                this.currentPage = 1;
-                this.$message({
-                    type: 'success',
-                    message: '已添加!'
-                });
-            }).catch(error =>
-            {
-                console.log(error);
-            });
+            this.getTableList();
         },
 }
 </script>
 <style scoped>
+  .el-table.warning-row {
+    background: rgb(253, 233, 196);
+  }
+  .el-table.success-row {
+    background: #cbf0b7;
+  }
   .search_name{
     width: 200px;
   }
