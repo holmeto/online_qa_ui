@@ -33,6 +33,7 @@
             </el-radio-group> -->
             <el-radio v-model="loginForm.role" :label=1>学生登录</el-radio>
             <el-radio v-model="loginForm.role" :label=2>老师登录</el-radio>
+            <span style="color:	#7B68EE" @click="registerAccount">没有账号？注册</span>
         </el-form-item>
         <el-checkbox 
             v-model="checked"
@@ -75,6 +76,9 @@ export default {
 		Bg
 	},
     methods: {
+        registerAccount() {
+            this.$router.push({ path: "/register" });
+        },
         login(event) {
             this.$refs.loginForm.validate((valid) => {
                 if(valid){

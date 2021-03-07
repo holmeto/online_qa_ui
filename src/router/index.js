@@ -4,6 +4,7 @@ import QuestionView from '@/components/QuestionView'
 import Login from '@/components/Login'
 import Home from '@/components/Home'
 import QuestionDetail from '@/components/QuestionDetail'
+import Register from '@/components/Register'
 
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/home',
       name: 'Home',
       component: Home
-    }
+    },
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register
+    },
   ]
 })
