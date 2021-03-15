@@ -46,7 +46,15 @@
               @click="dialogVisible = true">添加
             </el-button>
           </el-form-item>
+          <el-form-item style="position:relative;left:550px;">
+            <el-button
+              icon="el-icon-s-home"
+              type="success"
+              @click="logOut">退出登录
+            </el-button>
+          </el-form-item>
       </el-form>
+      <!-- <button @click="loginOutEvent">注销</button> -->
       <el-table
         :data="tableData"
         highlight-current-row
@@ -430,6 +438,10 @@
             },
             refreshData() {
                 location.reload();
+            },
+            logOut() {
+              this.$router.push({
+                path: "/"});
             }
         },
         created() {

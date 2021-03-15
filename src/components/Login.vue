@@ -127,7 +127,9 @@ export default {
     left: -0.1%;
     height: 100%;
     position: fixed;
-    background-image: url("../assets/images/bg2.jpeg");
+    background-image: url("../assets/images/book.jpg");
+    background-repeat:no-repeat;
+    background-size:100% 100%;
 }
 .login-page {
     -webkit-border-radius: 5px;
