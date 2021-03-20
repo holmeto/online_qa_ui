@@ -3,7 +3,7 @@
       <el-row class="demo-avatar demo-basic" style = "float: right;">
         <el-col :span="30">
           <div class="sub-title">{{ "欢迎，" + userName }}</div>
-          <div class="sub-title">{{ "积分:" + coinCount }}</div>
+          <div class="sub-title" @click="exchange">{{ "积分余额:" + coinCount }}</div>
           <div class="demo-basic--circle">
             <div>
               <!-- <span>{{ userName }}</span> -->
@@ -43,7 +43,7 @@
             <el-button
               class="el-icon-circle-plus-outline"
               type="text"
-              @click="dialogVisible = true">添加
+              @click="add">添加
             </el-button>
           </el-form-item>
           <el-form-item style="position:relative;left:550px;">
@@ -79,7 +79,6 @@
         <el-table-column
           label="问题标题">
           <template slot-scope="scope">
-            <i class="el-icon-time hidden-sm-and-down"></i>
             <span>{{ scope.row.questionName }}</span>
           </template>
         </el-table-column>
@@ -98,6 +97,7 @@
         <el-table-column
           label="提问时间">
           <template slot-scope="scope">
+            <i class="el-icon-time hidden-sm-and-down"></i>
             <span>{{ scope.row.createTime }}</span>
           </template>
         </el-table-column>
@@ -129,11 +129,12 @@
 
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm" size="medium">
         <el-dialog
-          title="添加"
+          :title="title"
           :append-to-body='true'
           :visible.sync="dialogVisible"
           width="80%"
           :before-close="handleClose">
+          <el-input type="hidden" v-model="ruleForm.id"/>
           <el-input type="hidden" v-model="ruleForm.userId"/>
           <!-- <el-form-item label="时间" prop="userDate">
             <el-date-picker type="datetime" placeholder="选择日期" v-model="ruleForm.userDate" style="width: 100%;"></el-date-picker>
@@ -158,35 +159,10 @@
 
           <span slot="footer" class="dialog-footer">
             <el-button @click="cancel()" size="medium">取 消</el-button>
-            <el-button @click="addQuestion()" type="primary" size="medium">确 定</el-button>
+            <el-button @click="submit()" type="primary" size="medium">确 定</el-button>
           </span>
         </el-dialog>
       </el-form>
-
-    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="70px" class="demo-ruleForm" size="medium">
-      <el-dialog
-        title="编辑"
-        :append-to-body='true'
-        :visible.sync="dialogUpdate"
-        width="80%"
-        :before-close="handleClose">
-        <el-input type="hidden" v-model="ruleForm.userId"/>
-        <el-form-item label="时间" prop="userDate">
-          <el-date-picker type="datetime" placeholder="选择日期" v-model="ruleForm.userDate" style="width: 100%;"></el-date-picker>
-        </el-form-item>
-        <el-form-item label="姓名" prop="userName">
-          <el-input v-model="ruleForm.userName"></el-input>
-        </el-form-item>
-        <el-form-item label="住址" prop="userAddress">
-          <el-input v-model="ruleForm.userAddress"></el-input>
-        </el-form-item>
-
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="cancel()" size="medium">取 消</el-button>
-            <el-button @click="updateUser()" type="primary" size="medium">确 定</el-button>
-          </span>
-      </el-dialog>
-    </el-form>
       <br>
       <div class="pages">
         <el-pagination
@@ -207,6 +183,7 @@
     export default {
         data() {
             return {
+                title: '添加',
                 userName: '',
                 coinCount: 0,
                 circleUrl: require("../assets/images/avatar.png"),
@@ -227,6 +204,7 @@
                   label: '计算机科学'
                 }],
                 ruleForm: {
+                    id: 0,
                     questionName: '',
                     questionContent: '',
                     questionType: '',
@@ -255,6 +233,15 @@
             }
         },
         methods: {
+            exchange() {
+              console.log("兑换")
+              this.$router.push({
+                path: "/exchange"});
+            },
+            add() {
+              this.title = "添加"
+              this.dialogVisible = true
+            },
             tableRowClassName({row, rowIndex}) {
               if (rowIndex === 1) {
                 return 'warning-row';
@@ -273,6 +260,7 @@
             },
             handleEdit(index, row) {
                 this.dialogVisible = true;
+                this.title = "编辑"
                 this.ruleForm = Object.assign({}, row); //这句是关键！！！
             },
             handleDelete(index, row) {
@@ -367,6 +355,33 @@
                   console.log(error);
               });
             },
+            submit() {
+                if(this.ruleForm.id == 0) {
+                  this.addQuestion();
+                } else {
+                  this.updateQuestion();
+                }
+            },
+            getUserInfo() {
+              let postData = JSON.stringify({
+                    "id": localStorage.getItem("userId"),
+              });
+              this.axios({
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  method: 'post',
+                  url:'/getUserInfo',
+                  data:postData
+              }).then(response =>
+              {  
+                localStorage.setItem("coinCount", response.data.data.coinCount);
+                this.coinCount = response.data.data.coinCount;
+              }).catch(error =>
+              {
+                console.log(error);
+              });
+            },
             addQuestion() {
                 console.log("开始提问");
                 console.log(localStorage.getItem("userName"));
@@ -389,40 +404,39 @@
                     this.getTableList();
                     this.getPages();
                     this.dialogVisible = false
+                    this.getUserInfo();
                     console.log(response);
                 }).catch(error =>
                 {
                     console.log(error);
                 });
             },
-            updateUser() {
-                let postData = this.qs.stringify({
-                    userId: this.ruleForm.userId,
-                    userDate: this.ruleForm.userDate,
-                    userName: this.ruleForm.userName,
-                    userAddress: this.ruleForm.userAddress
-                });
-                this.axios({
-                    method: 'post',
-                    url:'/update',
-                    data:postData
-                }).then(response =>
-                {
-                    this.handleCurrentChange();
-                    this.cancel();
-                    this.$message({
-                        type: 'success',
-                        message: '更新成功!'
-                    });
-                    console.log(response);
-                }).catch(error =>
-                {
-                    this.$message({
-                        type: 'success',
-                        message: '更新失败!'
-                    });
-                    console.log(error);
-                });
+            updateQuestion() {
+              console.log(localStorage.getItem("userName"));
+              console.log(localStorage.getItem("userId"));
+              let postData = JSON.stringify({
+                  "id": this.ruleForm.id,
+                  "questionName": this.ruleForm.questionName,
+                  "questionContent": this.ruleForm.questionContent,
+                  "questionType": this.ruleForm.questionType,
+              });
+              this.axios({
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  method: 'post',
+                  url:'/question/updateQuestion',
+                  data:postData
+              }).then(response =>
+              {   
+                  this.getTableList();
+                  this.getPages();
+                  this.dialogVisible = false
+                  console.log(response);
+              }).catch(error =>
+              {
+                  console.log(error);
+              });
             },
             onSearch() {
                 this.getTableList();

@@ -5,6 +5,8 @@ import Login from '@/components/Login'
 import Home from '@/components/Home'
 import QuestionDetail from '@/components/QuestionDetail'
 import Register from '@/components/Register'
+import Exchange from '@/components/Exchange'
+import Buy from '@/components/Buy'
 
 Vue.use(Router)
 
@@ -35,5 +37,15 @@ export default new Router({
       name: 'Register',
       component: Register
     },
+    {
+      path: '/exchange',
+      name: 'Exchange',
+      component: Exchange
+    },
+    {
+      path: '/buy',
+      name: 'Buy',
+      component: Buy
+    }
   ]
 })

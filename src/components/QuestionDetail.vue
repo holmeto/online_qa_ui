@@ -4,7 +4,7 @@
         <el-row class="demo-avatar demo-basic" style = "float: right;">
             <el-col :span="30">
             <div class="sub-title">{{ "欢迎，" + userName }}</div>
-            <div class="sub-title">{{ "积分:" + coinCount }}</div>
+            <div class="sub-title">{{ "积分余额:" + coinCount }}</div>
             <div class="demo-basic--circle">
                 <div>
                 </div>
@@ -112,11 +112,31 @@
                 // this.total = response.data.data.total;
                 this.$message({
                     type: 'success',
-                    message: '查询问题及回复成功!'
+                    message: '查询问题成功!'
                 });
             }).catch(error =>
             {
                 console.log(error);
+            });
+        },
+        getUserInfo() {
+            let postData = JSON.stringify({
+                "id": localStorage.getItem("userId"),
+            });
+            this.axios({
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'post',
+                url:'/getUserInfo',
+                data:postData
+            }).then(response =>
+            {  
+                localStorage.setItem("coinCount", response.data.data.coinCount);
+                this.coinCount = response.data.data.coinCount;
+            }).catch(error =>
+            {
+            console.log(error);
             });
         },
         onSubmit() {
@@ -136,6 +156,11 @@
                 data:postData
             }).then(response =>
             {   
+                this.$message({
+                    type: 'success',
+                    message: '回复成功!'
+                });
+                this.getUserInfo();
                 this.getTableList();
             }).catch(error =>
             {
