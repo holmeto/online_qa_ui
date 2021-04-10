@@ -28,6 +28,11 @@
             </div>
             </el-col>  
         </el-row>
+        <el-carousel height="150px">
+            <el-carousel-item v-for="item in coinRankList" :key="item">
+                <h3 class="large" style="text-align:center">{{ item.nickName + "， 积分： " + item.coinCount }}</h3>
+            </el-carousel-item>
+        </el-carousel>
         <!-- <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleAllChange">全选</el-checkbox> -->
         <div style="margin: 15px 0;"></div>
         <el-form v-model="checkedGoods" class="aaa" text-color="#FFD700">
@@ -102,13 +107,15 @@ export default {
             ],
             isIndeterminate: true,
             checkedGoods: [],
-            allPrice: 0
+            allPrice: 0,
+            coinRankList: []
         };
     },
     created() {
         this.userName = localStorage.getItem("userName");
         this.coinCount = localStorage.getItem("coinCount");
         this.getExchangeInfo();
+        this.getCoinRankList();
     },
     methods: {
         returnPage() {
@@ -191,6 +198,22 @@ export default {
             console.log(error);
             });
         },
+        getCoinRankList() {
+            this.axios({
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'post',
+                url:'/getCoinRankList',
+                data: null
+            }).then(response =>
+            {  
+                this.coinRankList = response.data.data;
+            }).catch(error =>
+            {
+            console.log(error);
+            });
+        },
         getAllPrice() {
             //获取总价方法封装
             let money = 0;
@@ -252,6 +275,15 @@ export default {
 };
 </script>
 <style lang="postcss" scoped>
+.el-carousel__item h3 {
+    color: #fa0f07;
+    font-size: 30px;
+    opacity: 0.5;
+    line-height: 150px;
+    background-image: url("../assets/images/book.jpg");
+    margin: 0;
+}
+
 .bbb {
     margin-left: 40px;
     margin-top: 80px;

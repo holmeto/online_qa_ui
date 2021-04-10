@@ -34,6 +34,13 @@
           </el-form-item>
           <el-form-item>
             <el-button
+              type="text"
+              @click="searchSimilar()"
+              class="el-icon-search">相似检索
+            </el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button
               class="el-icon-refresh"
               type="text"
               @click="refreshData">刷新
@@ -46,7 +53,7 @@
               @click="add">添加
             </el-button>
           </el-form-item>
-          <el-form-item style="position:relative;left:550px;">
+          <el-form-item style="position:relative;left:40%;">
             <el-button
               icon="el-icon-s-home"
               type="success"
@@ -440,6 +447,31 @@
             },
             onSearch() {
                 this.getTableList();
+            },
+            searchSimilar() {
+              let postData = JSON.stringify({
+                "questionName": this.search
+              });
+              this.axios({
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'post',
+                url:'/question/getSimilarQuestion',
+                data:postData
+              })
+              .then(response =>
+              {
+                  this.tableData = response.data.data.data;
+                  this.total = response.data.data.total;
+                  this.$message({
+                      type: 'success',
+                      message: '查询成功!'
+                  });
+              }).catch(error =>
+              {
+                  console.log(error);
+              });
             },
             getPages() {
                 // this.axios.post('/rows').then(response =>
