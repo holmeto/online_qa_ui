@@ -53,7 +53,7 @@
               @click="add">添加
             </el-button>
           </el-form-item>
-          <el-form-item style="position:relative;left:40%;">
+          <el-form-item style="position:relative;left:38.5%;">
             <el-button
               icon="el-icon-s-home"
               type="success"
